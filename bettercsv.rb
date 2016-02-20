@@ -14,22 +14,27 @@ songs = Hash.new {|h, k| h[k] = SortedSet.new}
 # -h displays the help.
 
 options = {
-  striprb3: false
+  striprb3: false,
+  verbose: false
 }
 
-# Parse the optiosn
+# Parse the options
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: ruby bettercsv.rb [options] file1 file2 ..."
 
-  opts.on( '-s', '--striprb3', 'Strip (RB3 version) from song title' ) do
+  opts.on('-s', '--striprb3', 'Strip (RB3 version) from song title') do
     options[:striprb3] = true
   end
 
-  # This displays the help screen, all programs are
-  # assumed to have this option.
-  opts.on( '-h', '--help', 'Display this screen' ) do
+  # This displays the help screen, all programs are assumed to have this option.
+  opts.on('-h', '--help', 'Display this screen') do
     puts opts
     exit
+  end
+
+  # Verbose mode. Prints out extra logs into standard error.
+  opts.on('-v', '--verbose', 'Print verbose mode') do
+    options[:verbose] = true
   end
 end
 
@@ -37,6 +42,7 @@ end
 optparse.parse!
 
 ARGV.each do |arg|
+  STDERR.puts "Processing #{arg}" if options[:verbose]
   has_errors = false
   begin
     handler = open(arg)
@@ -53,10 +59,10 @@ ARGV.each do |arg|
       # If the striprb3 option is enabled, let's strip any occurance of ' (RB3 version)' from the
       # song title.
       song_title.gsub!(' (RB3 version)', '') if options[:striprb3]
-      STDERR.puts song_title if options[:striprb3]
 
       songs[row['Artist']] << song_title.strip
-      #STDERR.puts "#{row['Artist']} #{row['Title']}"
+
+      STDERR.puts "#{row['Artist']} #{row['Title']}" if options[:verbose]
     end
     STDERR.puts "Successfully processed the artist and songs of #{arg} successfully!" if !has_errors
   rescue Errno::ENOENT
@@ -80,3 +86,5 @@ songs.each do |artist, songs|
 
   puts ','
 end
+
+STDERR.puts 'Processed successfully!'
