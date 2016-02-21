@@ -7,15 +7,16 @@ require 'optparse'
 # artist is and then extracts those into a hash. It sorts it then it "prints it
 # in a better format."
 songs = Hash.new {|h, k| h[k] = SortedSet.new}
+new_songs = Hash.new {|h, k| h[k] = SortedSet.new}
 
 # Options list. List of supported argument options:
 #
 # -striprb3 strips " (RB3 version)" from the song title.
 # -h displays the help.
-
 options = {
   striprb3: false,
-  verbose: false
+  verbose: false,
+  compare: false
 }
 
 # Parse the options
@@ -35,6 +36,12 @@ optparse = OptionParser.new do |opts|
   # Verbose mode. Prints out extra logs into standard error.
   opts.on('-v', '--verbose', 'Print verbose mode') do
     options[:verbose] = true
+  end
+
+  # If two filenames were passed in along with the comparison mode flag, we
+  # check to see what files were in the other
+  opts.on('-c', '--compare', 'Comparison mode') do
+    options[:compare] = true
   end
 end
 
@@ -60,9 +67,15 @@ ARGV.each do |arg|
       # song title.
       song_title.gsub!(' (RB3 version)', '') if options[:striprb3]
 
+      # If compare is set and a given parsed song already appears in the songs list, add it into the new_songs list.
+      if options[:compare] && !ARGV[0].eql?(arg) && (!songs.include?(row['Artist']) || !songs[row['Artist']].include?(song_title))
+        new_songs[row['Artist']] << song_title.strip
+        STDERR.puts "New song: #{row['Artist']} - #{row['Title']}" if options[:verbose]
+      end
+
       songs[row['Artist']] << song_title.strip
 
-      STDERR.puts "#{row['Artist']} #{row['Title']}" if options[:verbose]
+      STDERR.puts "Processed #{row['Artist']} - #{row['Title']}" if options[:verbose]
     end
     STDERR.puts "Successfully processed the artist and songs of #{arg} successfully!" if !has_errors
   rescue Errno::ENOENT
@@ -85,6 +98,24 @@ songs.each do |artist, songs|
   end
 
   puts ','
+end
+
+if !new_songs.empty?
+  puts ','
+  puts 'New Songs,'
+  puts ','
+
+  puts 'Artist,Song Title'
+
+  new_songs.each do |artist, songs|
+    puts "\"#{artist}\","
+
+    songs.each do |song|
+      puts ",\"#{song}\""
+    end
+
+    puts ','
+  end
 end
 
 STDERR.puts 'Processed successfully!'
