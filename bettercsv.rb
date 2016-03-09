@@ -9,10 +9,7 @@ require 'optparse'
 songs = Hash.new {|h, k| h[k] = SortedSet.new}
 new_songs = Hash.new {|h, k| h[k] = SortedSet.new}
 
-# Options list. List of supported argument options:
-#
-# -striprb3 strips " (RB3 version)" from the song title.
-# -h displays the help.
+# Options list.
 options = {
   striprb3: false,
   verbose: false,
