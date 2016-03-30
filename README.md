@@ -28,6 +28,12 @@ their viewers.
 - There currently isn't proper support for special characters. For example, the Ø in BØRNS will be
 malformatted in certain versions of Ruby and in pre 2.1, will output a "invalid byte sequence in
 UTF-8" error.
-- Certain Rock Band songs use special characters (ie. "’" instead of "'") as apostrophes.
+- Certain Rock Band songs are listed with special characters (ie. "’" instead of "'") as
+apostrophes.
 - Certain Rock Band songs use inconsistent capitalization with respect to the "(RB3 version)". For
-example, there exists a song called "I Want it All" and "I Want It All (RB3 version)".
+example, there exists a song called "I Want it All" and "I Want It All (RB3 version)". This affects
+the Rock Band 3 Version stripping.
+
+## LICENSE:
+
+This script is released under the 3-clause BSD license.
