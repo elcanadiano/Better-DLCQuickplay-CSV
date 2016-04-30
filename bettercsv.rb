@@ -45,6 +45,7 @@ end
 # Strip the options
 optparse.parse!
 
+i = 0
 ARGV.each do |arg|
   STDERR.puts "Processing #{arg}" if options[:verbose]
   has_errors = false
@@ -58,19 +59,19 @@ ARGV.each do |arg|
         break
       end
 
-      song_title = row['Title']
+      song_title = row['Title'].strip
 
       # If the striprb3 option is enabled, let's strip any occurance of ' (RB3 version)' from the
       # song title.
       song_title.gsub!(' (RB3 version)', '') if options[:striprb3]
 
       # If compare is set and a given parsed song already appears in the songs list, add it into the new_songs list.
-      if options[:compare] && !ARGV[0].eql?(arg) && (!songs.include?(row['Artist']) || !songs[row['Artist']].include?(song_title))
-        new_songs[row['Artist']] << song_title.strip
+      if options[:compare] && i > 0 && (!songs.include?(row['Artist']) || !songs[row['Artist']].include?(song_title))
+        new_songs[row['Artist']] << song_title
         STDERR.puts "New song: #{row['Artist']} - #{row['Title']}" if options[:verbose]
       end
 
-      songs[row['Artist']] << song_title.strip
+      songs[row['Artist']] << song_title
 
       STDERR.puts "Processed #{row['Artist']} - #{row['Title']}" if options[:verbose]
     end
@@ -78,6 +79,7 @@ ARGV.each do |arg|
   rescue Errno::ENOENT
     STDERR.puts "Could not process the file #{arg}."
   end
+  i += 1
 end
 
 if songs.empty?
@@ -87,10 +89,11 @@ end
 
 puts 'Artist,Song Title'
 
-songs.each do |artist, songs|
+#songs.each do |artist, songs|
+songs.keys.sort.each do |artist|
   puts "\"#{artist}\","
 
-  songs.each do |song|
+  songs[artist].each do |song|
     puts ",\"#{song}\""
   end
 
@@ -104,10 +107,11 @@ if !new_songs.empty?
 
   puts 'Artist,Song Title'
 
-  new_songs.each do |artist, songs|
+  #new_songs.each do |artist, songs|
+  new_songs.keys.sort.each do |artist|
     puts "\"#{artist}\","
 
-    songs.each do |song|
+    new_songs[artist].each do |song|
       puts ",\"#{song}\""
     end
 
