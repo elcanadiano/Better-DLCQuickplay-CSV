@@ -51,8 +51,7 @@ ARGV.each do |arg|
   has_errors = false
   begin
     handler = open(arg)
-    csv_string = handler.read.encode!("UTF-8", "UTF-8", invalid: :replace)
-    CSV.parse(csv_string, headers: true) do |row|
+    CSV.parse(handler, headers: true, encoding: "windows-1252:utf-8") do |row|
       if row['Artist'].nil? || row['Title'].nil?
         STDERR.puts "Either the artist or song title was not found in #{arg}."
         has_errors = true
@@ -60,20 +59,21 @@ ARGV.each do |arg|
       end
 
       song_title = row['Title'].strip
+      artist     = row['Artist'].strip
 
       # If the striprb3 option is enabled, let's strip any occurance of ' (RB3 version)' from the
       # song title.
       song_title.gsub!(' (RB3 version)', '') if options[:striprb3]
 
       # If compare is set and a given parsed song already appears in the songs list, add it into the new_songs list.
-      if options[:compare] && i > 0 && (!songs.include?(row['Artist']) || !songs[row['Artist']].include?(song_title))
-        new_songs[row['Artist']] << song_title
-        STDERR.puts "New song: #{row['Artist']} - #{row['Title']}" if options[:verbose]
+      if options[:compare] && i > 0 && (!songs.include?(artist) || !songs[artist].include?(song_title))
+        new_songs[artist] << song_title
+        STDERR.puts "New song: #{artist} - #{song_title}" if options[:verbose]
       end
 
-      songs[row['Artist']] << song_title
+      songs[artist] << song_title
 
-      STDERR.puts "Processed #{row['Artist']} - #{row['Title']}" if options[:verbose]
+      STDERR.puts "Processed #{artist} - #{song_title}" if options[:verbose]
     end
     STDERR.puts "Successfully processed the artist and songs of #{arg} successfully!" if !has_errors
   rescue Errno::ENOENT
